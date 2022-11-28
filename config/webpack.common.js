@@ -4,9 +4,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 const paths = require('./paths')
 
+console.log(paths)
+
+const pages = ['index']
+
 module.exports = {
   // Where webpack looks to start building the bundle
-  entry: [paths.src + '/index.js'],
+  entry: pages.reduce((out, page) => ((out[page] = `${paths.src}/${page}/index.js`), out), {}),
 
   // Where webpack outputs the assets and bundles
   output: {
@@ -33,15 +37,15 @@ module.exports = {
         },
       ],
     }),
-
-    // Generates an HTML file from a template
-    // Generates deprecation warning: https://github.com/jantimon/html-webpack-plugin/issues/1501
-    new HtmlWebpackPlugin({
-      title: 'webpack Boilerplate',
-      favicon: paths.src + '/images/favicon.png',
-      template: paths.src + '/template.html', // template file
-      filename: 'index.html', // output file
-    }),
+    ...pages.map(
+      (page) =>
+        new HtmlWebpackPlugin({
+          inject: true,
+          filename: `${page}.html`,
+          template: `${paths.src}/${page}/index.html`,
+          chunks: [page],
+        })
+    ),
   ],
 
   // Determine how modules within the project are treated
